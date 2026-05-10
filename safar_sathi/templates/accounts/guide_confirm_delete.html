@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Delete Guide — Safar Sathi{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card p-5 text-center">
+                <i class="bi bi-exclamation-triangle-fill text-danger mb-3" style="font-size:3rem;"></i>
+                <h4 class="fw-bold mb-2">Delete Guide?</h4>
+                <p class="text-muted mb-4">Are you sure you want to delete <strong>{{ guide.user.get_full_name }}</strong>? This action cannot be undone.</p>
+                <form method="post" class="d-flex gap-3 justify-content-center">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-4">Yes, Delete</button>
+                    <a href="{% url 'accounts:guide_detail' guide.pk %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

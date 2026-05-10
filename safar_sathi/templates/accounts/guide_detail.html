@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}{{ guide.user.get_full_name }} — Safar Sathi{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li><li class="breadcrumb-item"><a href="{% url 'accounts:guide_list' %}">Guides</a></li><li class="breadcrumb-item active">{{ guide.user.get_full_name }}</li></ol></nav>
+        <h1 class="mt-2">{{ guide.user.get_full_name|default:guide.user.username }}</h1>
+        <p style="color:rgba(255,255,255,.8);">Local Travel Expert</p>
+    </div>
+</div>
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="sidebar-card text-center">
+                {% if guide.guide_photo %}
+                <img src="{{ guide.guide_photo.url }}" class="rounded-circle mb-3" width="130" height="130" style="object-fit:cover;">
+                {% else %}
+                <div class="rounded-circle img-placeholder mx-auto mb-3" style="width:130px;height:130px;"><i class="bi bi-person-fill" style="font-size:3.5rem;"></i></div>
+                {% endif %}
+                <h5 class="fw-bold mb-1">{{ guide.user.get_full_name|default:guide.user.username }}</h5>
+                <div class="stars mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> <span class="rating-num">{{ guide.rating }}</span></div>
+                <p class="text-muted small">{{ guide.reviews.count }} reviews</p>
+            </div>
+            <div class="sidebar-card">
+                <h6 class="fw-bold mb-3">Details</h6>
+                <ul class="list-unstyled" style="font-size:.9rem;line-height:2.2;">
+                    <li><i class="bi bi-geo-alt text-primary me-2"></i><strong>Region:</strong> {{ guide.region }}</li>
+                    <li><i class="bi bi-translate text-primary me-2"></i><strong>Languages:</strong> {{ guide.languages }}</li>
+                    <li><i class="bi bi-briefcase text-primary me-2"></i><strong>Experience:</strong> {{ guide.experience_years }} years</li>
+                    <li><i class="bi bi-currency-dollar text-primary me-2"></i><strong>Rate:</strong> ৳{{ guide.hourly_rate }}/hr</li>
+                    {% if guide.phone %}<li><i class="bi bi-telephone text-primary me-2"></i>{{ guide.phone }}</li>{% endif %}
+                    {% if guide.contact_info %}<li><i class="bi bi-chat text-primary me-2"></i>{{ guide.contact_info }}</li>{% endif %}
+                </ul>
+                {% if user.is_authenticated and not user_has_reviewed %}
+                <a href="{% url 'reviews:guide_review' guide.pk %}" class="btn btn-outline-primary btn-sm w-100 mt-2"><i class="bi bi-star me-1"></i>Write a Review</a>
+                {% endif %}
+                {% if user.is_staff %}
+                <div class="d-flex gap-2 mt-3">
+                    <a href="{% url 'accounts:guide_update' guide.pk %}" class="btn btn-warning btn-sm flex-grow-1">Edit</a>
+                    <a href="{% url 'accounts:guide_delete' guide.pk %}" class="btn btn-outline-danger btn-sm flex-grow-1">Delete</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-8">
+            {% if guide.description %}
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-3">About Me</h5>
+                <p style="line-height:1.8;color:var(--text-muted);">{{ guide.description }}</p>
+            </div>
+            {% endif %}
+            {% if guide.references %}
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-3">References</h5>
+                <p style="line-height:1.8;color:var(--text-muted);">{{ guide.references }}</p>
+            </div>
+            {% endif %}
+            <div class="card p-4">
+                <h5 class="fw-bold mb-4">Reviews <span class="badge bg-light text-muted ms-2" style="font-size:.8rem;">{{ reviews.count }}</span></h5>
+                {% for review in reviews %}
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong>{{ review.user.get_full_name|default:review.user.username }}</strong>
+                            <div class="stars small"><i class="bi bi-star-fill"></i> {{ review.rating }}/5</div>
+                        </div>
+                        <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    {% if review.title %}<p class="fw-600 mb-1">{{ review.title }}</p>{% endif %}
+                    <p class="text-muted small mb-0" style="line-height:1.6;">{{ review.content }}</p>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center py-3">No reviews yet. Be the first to review!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
