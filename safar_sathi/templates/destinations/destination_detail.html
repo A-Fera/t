@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}{{ destination.name }} — Safar Sathi{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li><li class="breadcrumb-item"><a href="{% url 'destinations:destination_list' %}">Destinations</a></li><li class="breadcrumb-item active">{{ destination.name }}</li></ol></nav>
+        <div class="d-flex justify-content-between align-items-end mt-2 flex-wrap gap-2">
+            <div>
+                <span class="badge bg-warning text-dark mb-2">{{ destination.get_category_display }}</span>
+                <h1>{{ destination.name }}</h1>
+                <p style="color:rgba(255,255,255,.8);"><i class="bi bi-geo-alt me-1"></i>{{ destination.location }}{% if destination.country %}, {{ destination.country }}{% endif %}</p>
+            </div>
+            {% if user.is_staff %}
+            <div class="d-flex gap-2">
+                <a href="{% url 'destinations:destination_update' destination.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                <a href="{% url 'destinations:destination_delete' destination.pk %}" class="btn btn-outline-light btn-sm">Delete</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="container py-5">
+    <!-- PHOTO GALLERY -->
+    {% if photos %}
+    <div class="row g-2 mb-5">
+        <div class="col-md-8">
+            <img src="{{ photos.0.image.url }}" class="w-100 rounded" style="height:380px;object-fit:cover;" alt="{{ destination.name }}">
+        </div>
+        <div class="col-md-4">
+            <div class="row g-2 h-100">
+                {% for photo in photos|slice:"1:5" %}
+                <div class="col-6">
+                    <img src="{{ photo.image.url }}" class="w-100 rounded" style="height:184px;object-fit:cover;" alt="{{ destination.name }}">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card p-4 mb-4">
+                <h4 class="fw-bold mb-3">About this Destination</h4>
+                <p style="line-height:1.8;color:var(--text-muted);">{{ destination.description }}</p>
+                {% if destination.best_time_to_visit %}
+                <div class="alert alert-success mt-3 mb-0 border-0" style="background:rgba(26,107,60,.08);">
+                    <i class="bi bi-calendar-check me-2"></i><strong>Best time to visit:</strong> {{ destination.best_time_to_visit }}
+                </div>
+                {% endif %}
+            </div>
+
+            {% if destination.features.exists %}
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-3">Features & Attractions</h5>
+                <div class="row g-3">
+                    {% for feature in destination.features.all %}
+                    <div class="col-md-6">
+                        <div class="d-flex gap-2 align-items-start">
+                            <div style="width:32px;height:32px;background:rgba(26,107,60,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">
+                                <i class="bi bi-check2 text-primary small"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block small">{{ feature.feature_name }}</strong>
+                                {% if feature.description %}<span class="text-muted" style="font-size:.8rem;">{{ feature.description }}</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ACCOMMODATIONS -->
+            {% if accommodations %}
+            <div class="card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Where to Stay</h5>
+                    <a href="{% url 'bookings:accommodation_list' %}" class="text-primary small">View All</a>
+                </div>
+                <div class="row g-3">
+                    {% for acc in accommodations %}
+                    <div class="col-md-6">
+                        <div class="border rounded p-3">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong class="d-block">{{ acc.name }}</strong>
+                                    <span class="badge-category">{{ acc.get_accommodation_type_display }}</span>
+                                </div>
+                                <div class="text-end">
+                                    <div class="text-primary fw-bold">৳{{ acc.price_per_night }}</div>
+                                    <small class="text-muted">/night</small>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <a href="{% url 'bookings:accommodation_detail' acc.pk %}" class="btn btn-outline-primary btn-sm">Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- REVIEWS -->
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Traveler Reviews</h5>
+                    <div class="d-flex gap-2">
+                        {% if user.is_authenticated and not user_has_reviewed %}
+                        <a href="{% url 'reviews:destination_review' destination.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-star me-1"></i>Write Review</a>
+                        {% endif %}
+                        <a href="{% url 'reviews:destination_review_list' destination.pk %}" class="btn btn-outline-secondary btn-sm">View All</a>
+                    </div>
+                </div>
+                {% for review in reviews %}
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <strong>{{ review.user.get_full_name|default:review.user.username }}</strong>
+                        <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    <div class="stars small mb-1">{% for i in "12345" %}{% if forloop.counter <= review.rating %}<i class="bi bi-star-fill"></i>{% else %}<i class="bi bi-star"></i>{% endif %}{% endfor %}</div>
+                    {% if review.title %}<p class="fw-bold small mb-1">{{ review.title }}</p>{% endif %}
+                    <p class="text-muted small mb-0" style="line-height:1.6;">{{ review.content }}</p>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-chat-square-text" style="font-size:2.5rem;opacity:.3;"></i>
+                    <p class="mt-2">No reviews yet. Be the first!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="sidebar-card">
+                <h6 class="fw-bold mb-3">Quick Info</h6>
+                <ul class="list-unstyled" style="font-size:.9rem;line-height:2.5;">
+                    <li><i class="bi bi-geo-alt text-primary me-2"></i>{{ destination.location }}</li>
+                    <li><i class="bi bi-globe text-primary me-2"></i>{{ destination.country }}</li>
+                    {% if destination.entry_fee > 0 %}
+                    <li><i class="bi bi-ticket text-primary me-2"></i>Entry: ৳{{ destination.entry_fee }}</li>
+                    {% else %}
+                    <li><i class="bi bi-ticket text-primary me-2"></i>Free Entry</li>
+                    {% endif %}
+                    <li><i class="bi bi-tag text-primary me-2"></i>{{ destination.get_category_display }}</li>
+                </ul>
+            </div>
+            <div class="sidebar-card">
+                <h6 class="fw-bold mb-3">Actions</h6>
+                {% if user.is_authenticated %}
+                <a href="{% url 'destinations:photo_upload' destination.pk %}" class="btn btn-outline-primary btn-sm w-100 mb-2"><i class="bi bi-camera me-1"></i>Upload Photo</a>
+                <a href="{% url 'itinerary:itinerary_create' %}" class="btn btn-primary btn-sm w-100"><i class="bi bi-journal-plus me-1"></i>Add to Itinerary</a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-sm w-100">Login to interact</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Upload Photo — Safar Sathi{% endblock %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="mt-2">Upload Photo for {{ destination.name }}</h1></div></div>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card p-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<div class="text-danger small mt-1">{% for e in field.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary px-4">Upload Photo</button>
+                        <a href="{% url 'destinations:destination_detail' destination.pk %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

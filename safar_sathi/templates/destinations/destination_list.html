@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Destinations — Safar Sathi{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li><li class="breadcrumb-item active">Destinations</li></ol></nav>
+        <h1 class="mt-2">Explore Destinations</h1>
+        <p style="color:rgba(255,255,255,.8);">Discover the hidden gems of Bangladesh</p>
+    </div>
+</div>
+<div class="container py-4">
+    <!-- FILTERS -->
+    <div class="card p-3 mb-4 border-0 shadow-sm">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="search" value="{{ search }}" class="form-control border-start-0 ps-0" placeholder="Search by name or location...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for val, label in categories %}
+                    <option value="{{ val }}" {% if val == selected_category %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Filter</button></div>
+            <div class="col-md-2"><a href="{% url 'destinations:destination_list' %}" class="btn btn-outline-secondary w-100">Clear</a></div>
+        </form>
+    </div>
+    {% if user.is_staff %}
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{% url 'destinations:destination_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Add Destination</a>
+    </div>
+    {% endif %}
+    <p class="text-muted small mb-3">Showing {{ destinations|length }} destination{{ destinations|length|pluralize }}</p>
+    <div class="row g-4">
+        {% for dest in destinations %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100">
+                {% if dest.photos.first %}
+                <img src="{{ dest.photos.first.image.url }}" class="card-img-top" height="220" alt="{{ dest.name }}" style="object-fit:cover;">
+                {% else %}
+                <div class="card-img-top img-placeholder" style="height:220px;"><i class="bi bi-image" style="font-size:3rem;opacity:.4;"></i></div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge-category">{{ dest.get_category_display }}</span>
+                        {% if dest.is_featured %}<span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>Featured</span>{% endif %}
+                    </div>
+                    <h5 class="card-title">{{ dest.name }}</h5>
+                    <p class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i>{{ dest.location }}{% if dest.country %}, {{ dest.country }}{% endif %}</p>
+                    <p class="card-text text-muted small" style="line-height:1.6;">{{ dest.description|truncatewords:20 }}</p>
+                    {% if dest.entry_fee > 0 %}
+                    <p class="text-primary small fw-bold mb-0"><i class="bi bi-ticket me-1"></i>Entry: ৳{{ dest.entry_fee }}</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent border-0 pb-3">
+                    <a href="{% url 'destinations:destination_detail' dest.pk %}" class="btn btn-primary btn-sm w-100">Explore <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5 text-muted">
+            <i class="bi bi-geo-alt" style="font-size:4rem;opacity:.3;"></i>
+            <h5 class="mt-3">No destinations found</h5>
+            <p>Try changing your search or <a href="{% url 'destinations:destination_list' %}">view all</a></p>
+        </div>
+        {% endfor %}
+    </div>
+    {% if is_paginated %}
+    <nav class="mt-5 d-flex justify-content-center">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search }}&category={{ selected_category }}">‹ Prev</a></li>{% endif %}
+            {% for n in page_obj.paginator.page_range %}<li class="page-item {% if n == page_obj.number %}active{% endif %}"><a class="page-link" href="?page={{ n }}&search={{ search }}&category={{ selected_category }}">{{ n }}</a></li>{% endfor %}
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search }}&category={{ selected_category }}">Next ›</a></li>{% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
